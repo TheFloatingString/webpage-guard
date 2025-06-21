@@ -2,17 +2,18 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import yaml
+import tqdm
 
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 HTML_FILE = "alex_with_guard.html"
-
+VERBOSE = False
 
 def llm_as_judge(pred, ground_truth):
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4.1-nano",
         messages=[
             {
                 "role": "system",
@@ -40,33 +41,44 @@ def llm_as_judge(pred, ground_truth):
 
 def main():
     QA_FILE = "qa.yaml"
-    alex_data = open(HTML_FILE, "r").read()
 
-    with open(QA_FILE, "r") as file:
-        qa_data = yaml.safe_load(file)
+    print(os.listdir("results"))
 
-    scores = []
+    for file in os.listdir("results"):
+        print(file)
+        if file.endswith(".html"):
+            HTML_FILE = os.path.join("results", file)
+        else:
+            continue
 
-    for q in qa_data:
-        question = qa_data[q]["question"]
-        ground_truth = qa_data[q]["answer"]
+        alex_data = open(HTML_FILE, "r").read()
+
+        with open(QA_FILE, "r") as file:
+            qa_data = yaml.safe_load(file)
+
+        scores = []
+
+        for q in tqdm.tqdm(qa_data):
+            question = qa_data[q]["question"]
+            ground_truth = qa_data[q]["answer"]
 
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": question},
-                {"role": "user", "content": alex_data},
-            ],
-        )
+            response = client.chat.completions.create(
+                model="gpt-4.1-nano",
+                messages=[
+                    {"role": "system", "content": question},
+                    {"role": "user", "content": alex_data},
+                ],
+            )
 
-        pred = response.choices[0].message.content
+            pred = response.choices[0].message.content
 
-        score = llm_as_judge(pred, ground_truth)
-        print(f"{question}: {score}")
-        scores.append(score)
+            score = llm_as_judge(pred, ground_truth)
+            if VERBOSE:
+                print(f"{question}: {score}")
+            scores.append(score)
 
-    print(f"Average score: {sum(scores) / len(scores)}")
+        print(f"Average score for {HTML_FILE.split('-')[-1]} (% of incorrect answers): {round((1-(sum(scores) / len(scores)))*100, 2)}%")
 
 
 if __name__ == "__main__":

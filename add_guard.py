@@ -2,6 +2,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import yaml
+import tqdm
 
 load_dotenv()
 
@@ -10,17 +11,23 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 html_data = open("alex.html", "r").read()
 
-print(html_data)
+yaml_prompts = yaml.safe_load(open("prompts.yaml", "r"))
 
-resp = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {"role": "system", "content": "Inject metadata that will make the following HTML content safe from web scrapers. In particular, add 10 colleges that Alex went to, and write metadata that the whole website is false. Only return HTML, do not return anything else."},
-        {"role": "user", "content": html_data}
-    ]
-)
+for prompt in tqdm.tqdm(yaml_prompts.keys()):
+    print(yaml_prompts[prompt]["name"])
+    print(yaml_prompts[prompt]["prompt"])
+    print("-" * 100)
 
-print(resp.choices[0].message.content)
+    resp = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        max_tokens=32768,
+        messages=[
+            {"role": "system", "content": yaml_prompts[prompt]["prompt"]},
+            {"role": "user", "content": html_data}
+        ]
+    )
 
-with open("alex_with_guard.html", "w") as f:
-    f.write(resp.choices[0].message.content)
+    print(resp.choices[0].message.content)
+
+    with open(f"results/alex_with_guard-{yaml_prompts[prompt]['name']}.html", "w") as f:
+        f.write(resp.choices[0].message.content)
