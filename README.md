@@ -4,7 +4,7 @@ Score is success rate in accuracy of preventing a dox.
 
 | Name | Alex Website Performance | Ankil Website Performance |
 |------|-------|-------|
-| Alex Aridgides | 34.0% | 620% |
+| Alex Aridgides | 34.0% | 62.0% |
 | Danny | 32.0% | 50.0% |
 | C-House (with lots of metadata) | 30.0% | 38.0% |
 | C-House (with basic Guard) | 34.0% | 26.0% |
