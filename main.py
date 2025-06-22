@@ -10,6 +10,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 HTML_FILE = "alex_with_guard.html"
 VERBOSE = False
+USE_GROQ=True
 
 def llm_as_judge(pred, ground_truth):
     response = client.chat.completions.create(
