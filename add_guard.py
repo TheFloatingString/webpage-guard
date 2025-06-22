@@ -9,7 +9,7 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-html_data = open("alex.html", "r").read()
+html_data = open("ankilp.html", "r").read()
 
 yaml_prompts = yaml.safe_load(open("prompts.yaml", "r"))
 
